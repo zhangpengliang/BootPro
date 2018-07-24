@@ -1,0 +1,5 @@
+Java配置是Spring4.X推荐使用的方式，可以完全替代xml配置
+
+@Configuration 声明当前类是一个配置类,相当于一个Spring 配置的xml文件
+
+@Bean 注解在方法上，声明当前方法的返回值为一个Bean

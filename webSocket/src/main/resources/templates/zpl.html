@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlsn:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <title>广播式</title>
+</head>
+<body onload="disconnect()">
+  <div>
+    <div>
+      <button id="connect" onclick="connect()">链接</button>
+      <button id="disconnect" disabled="disabled" onclick="disconnect()">断开链接</button>
+    </div>
+     <div id="conversationDiv">
+        <label>输入你的名字</label><input type="text" id=name>
+        <button id="sendName" onclick="sendName()">发送</button>
+     </div>
+      <p id="response"></p>
+  </div>
+  <script th:src="@{stomp/stomp.min.js}"></script>
+  <script th:src="@{stomp/sockjs.min.js}"></script>
+  <script th:src="@{jquery/jquery-1.10.2.min.js}"></script>
+  <script type="text/javascript">
+  	var stompClient=null;
+  	function disconnect(){
+  		/* 1、断开链接设置为不可用2、连接设置成可用3、断开链接 */
+  		if(stompClient!=null){
+  			stompClient.disconnect();
+  		}
+  		setConnected(false);
+  		
+  	}
+  	
+  	function setConnected(connected){
+  		document.getElementById('connect').disabled=connected;
+  		document.getElementById('disconnect').disabled=!connected;
+  		document.getElementById('conversationDiv').style.visibility=connected?'visible':'hidden';
+  		$('#response').html();
+  	}
+  	
+  	function connect(){
+  		var socket=new SockJS('/endpointZPL');
+  		stompClient=Stomp.over(socket);
+  		stompClient.connect({},function(frame){
+  			setConnected(true);
+  			/* 接收到这个信息 */
+  			stompClient.subscribe('/topic/getResponse',function(response){
+  				showResponse(JSON.parse(response.body).responseMessage);
+  			});
+  		});
+  	}
+  	
+  	function showResponse(message){
+  		var response=$('#response');
+  		response.html(message);
+  	}
+  	
+  	/* 发送 */
+  	function sendName(){
+  		var name=$('#name').val();
+  		stompClient.send('/welcome',{},JSON.stringify({'name':name}));
+  	}
+  
+  </script>
+</body>
